@@ -1,7 +1,8 @@
 from tkinter import * 
 from tkinter import messagebox, ttk
 import json
-
+# -----------------------------------------------------------     
+# type
 
 icons = {
 
@@ -9,117 +10,113 @@ icons = {
             "search" : "icons/serch.ico",
             "password" : "icons/password_security_icon_154431.ico",
             "error" : "icons/cloud_password.ico",
-            "remouve":"icons/removetheuser_elimina_3541.ico"
+            "remove":"icons/removetheuser_elimina_3541.ico"
 
     }
+# -----------------------------------------------------------     
+
 
 symbols = (
 
-            ",", "!", "@", "#", "$", "%", "^", "&", "*","-","_",
-            "=", "+", "/", "?", ">", ".", "<", ";",":", "\"","\'",
-            "\\","[", "]", "(", ")","{", "}", "|", "`", "~"       
+            ",", "!", "@", "#", "$", "%", "^", "&", "*", "-", "_",
+            "=", "+", "/", "?", ">", ".", "<", ";", ":", "\"", "\'",
+            "\\","[", "]", "(", ")","{", "}", "|", "`", "~", "¥", 
+            "€", "£", "→", "←", "²", "❁", "©", "°", "•"
     )
+# -----------------------------------------------------------     
+
 
 def get_passwords() -> list:
     try:
         with open("Passwords.json", "r") as file:
             passwords = json.load(file)
-    except():
+    except FileNotFoundError:
         passwords = []
     return passwords
+# -----------------------------------------------------------     
 
 
 def update_passwords(new_list_of_passwords:list):
     with open("Passwords.json", "w") as passwrds_file:
-        json.dump(new_list_of_passwords, passwrds_file, indent=4)
-
-    
-        
-
+        json.dump(new_list_of_passwords, passwrds_file, indent=4)    
 # -----------------------------------------------------------
-def missing(error:str):
 
-    if type(error) == str:
-        messagebox.showerror("problem", error)
-    
-    else:
-        missing("error from input type")
-
-
+def show_error(error:str):
+    messagebox.showerror("problem", error)
 # -------------------------------------------------------------
-def font(size:int, font_wight="bold") -> tuple:
-    if type(size) != int:
+
+
+def font(size:int, font_weight="bold") -> tuple:
+    if not isinstance(size, int):
         try:
             size = int(size)
 
         except ValueError:
-            missing("size font type error")
+            show_error("size font type error")
 
-    if type(size) == int:
+    if isinstance(size, int):
+    
+        if  isinstance(font_weight, str):
+            if font_weight in ("bold", "italic", "normal"):
+                return ("Helvetica", size, font_weight)
             
-        if type(font_wight) == str:
-            if font_wight in ("bold", "italic", "normal"):
-                return ("Helvetica", size, font_wight)
-            
-            elif font_wight[0:3] == "bold":
-                if font_wight[5:9] == "italic":
-                    return ("Helvetica", size, font_wight)
-                else: missing(f"{font_wight[5:-1]} is not define")
+            elif font_weight[0:3] == "bold":
+                if font_weight[5:9] == "italic":
+                    return ("Helvetica", size, font_weight)
+                
+                else: show_error(f"{font_weight[5:-1]} is not define")
                  
             else:
-                missing("font wight not define")
+                show_error("font wight not define")
         else:
-            missing("font wight not str")
+            show_error("font wight not str")
 
 
 # --------------------------------------add password-------------------------------------------
-def add_password():
+def open_add_password_window(window:Tk):
     
-    win = Tk()
+    win = Toplevel(window)
     result = None
     win.title("Add a password")
     win.geometry('400x200')
     win.iconbitmap(icons["password"])
     win.resizable(False, False)
 
-
-    user_name_label = Label(win, font=font(10), text='User name:')
-    user_name_label.grid(row=0, column=0)
+    Label(win, font=font(10), text='User name:').grid(row=0, column=0)
 
     user_name_entry = Entry(win, width=50, font=font(10))
     user_name_entry.grid(row=0, column=1)
 
-    app_of_password_label = Label(win, font=font(10), text='App of password:')
-    app_of_password_label.grid(row=1, column=0)
+    Label(win, font=font(10), text='App of password:').grid(row=1, column=0)
 
-    app_of_password = Entry(win, width=50, font=font(10))
-    app_of_password.grid(row=1, column=1)
+    application_entry = Entry(win, width=50, font=font(10))
+    application_entry.grid(row=1, column=1)
 
-    password_label = Label(win, font=font(10), text='Password:')
-    password_label.grid(row=2, column=0)
+    Label(win, font=font(10), text='Password:').grid(row=2, column=0)
 
     password_entry = Entry(win, width=50, font=font(10))
     password_entry.grid(row=2, column=1)
 
-    def access():
+    def validate_password_data():
+
         # All Problems of input
-        if (not user_name_entry.get()) and (not app_of_password.get()) and (not password_entry.get()): 
-            missing('No Informations')
+        if (not user_name_entry.get()) and (not application_entry.get()) and (not password_entry.get()): 
+            show_error('No Informations')
         
         elif (
                 (not user_name_entry.get()) 
-                or (not app_of_password.get()) 
+                or (not application_entry.get()) 
                 or (not password_entry.get())
             ): 
 
             if not user_name_entry.get():
-                missing('No User name')
+                show_error('No User name')
 
-            elif not app_of_password.get():
-                missing('No App of this Password')
+            elif not application_entry.get():
+                show_error('No App of this Password')
 
             elif not password_entry.get():
-                missing('No Password')
+                show_error('No Password')
 
         # Password Problems
         elif (
@@ -132,22 +129,23 @@ def add_password():
             ):
             
             if password_entry.get().isspace():
-                missing("No Password")
+                show_error("No Password")
 
             elif len(password_entry.get()) <= 8:
                 # missing("Weak Password")
-                missing("Weak password, Password should be longest")
+                show_error("Weak password, Password should be longest")
 
             elif not any((char.isnumeric() for char in password_entry.get())):
-                missing("Weak password, Password should continu sam numbers")
+                show_error("Weak password, Password should continu sam numbers")
 
             elif password_entry.get().islower():
-                missing("Weak password, Password should continu sam capital leterses")
+                show_error("Weak password, Password should continu sam capital leterses")
             
             elif password_entry.get().isupper():
-                missing("Weak password, Password should continu sam small leterses")
+                show_error("Weak password, Password should continu sam small leterses")
             else:
-                missing("Weak password, Password should continu sam symbols")
+                show_error("Weak password, Password should continu sam symbols")
+
         # User name Problems
         elif(
                 (not user_name_entry.get().istitle()) 
@@ -157,60 +155,63 @@ def add_password():
             ):
 
             if not user_name_entry.get().istitle():
-                missing("User name error, all words should be capital in the front")
+                show_error("User name error, all words should be capital in the front")
 
             elif user_name_entry.get().count(" ") < 1 or user_name_entry.get().count(" ") >= 8:
                 if user_name_entry.get().count(" ") < 1:
-                    missing("User name error, No completed name (missing fathers names)")
+                    show_error("User name error, No completed name (missing fathers names)")
                 
                 elif user_name_entry.get().count(" ") >= 8:
-                    missing("User name error, spaces problems")       
+                    show_error("User name error, spaces problems")       
 
             else:
-                missing("User name error, cannot add symbols")
+                show_error("User name error, cannot add symbols")
                 
         # App of password Problems
         elif(
-                (not app_of_password.get().istitle())
-                or (any((char in symbols for char in app_of_password.get()))) 
+                (not application_entry.get().istitle())
+                or (any((char in symbols for char in application_entry.get()))) 
                 or (user_name_entry.get().isupper())
             ):
             
-            if not app_of_password.get().istitle():
-                missing("App of password error, the first letter should be capital")
+            if not application_entry.get().istitle():
+                show_error("App of password error, the first letter should be capital")
             
-            elif any((char in symbols for char in app_of_password.get())):
-                missing("App of password error, can't using any symbol")
+            elif any((char in symbols for char in application_entry.get())):
+                show_error("App of password error, can't using any symbol")
 
-            elif app_of_password.get().isupper():
-                missing("App of password error, all of letters App of password can't be capital")
+            elif application_entry.get().isupper():
+                show_error("App of password error, all of letters App of password can't be capital")
 
 
         else: 
             
             nonlocal result
-            result = (app_of_password.get(), password_entry.get(), user_name_entry.get())
+            result = (application_entry.get(), password_entry.get(), user_name_entry.get())
             return True
         
     # command of Buttons
-    def finish():
-        if access():
+    def submit_password():
+        if validate_password_data():
             win.destroy()
-
-    def clear():
-        user_name_entry.delete(0, END)
-        password_entry.delete(0, END)
-        app_of_password.delete(0, END)
+            
         
 
-    return_button = Button(win, text="Finish", font=font(10), bg="green", command= finish, width=10)
-    return_button.place(x=280, y=140)
+    def clear_all():
+        user_name_entry.delete(0, END)
+        password_entry.delete(0, END)
+        application_entry.delete(0, END)
+        
 
-    Button(win, command=clear, text="clear all", font=font(10), background="red4", width=10).place(x=35, y=140)
+    submit_button = Button(win, text="Finish", font=font(10), bg="green", command= submit_password, width=10)
+    submit_button.place(x=280, y=140)
 
-
-    win.mainloop()
+    Button(win, command=clear_all, text="clear all", font=font(10), background="red4", width=10).place(x=35, y=140)
+    win.wait_window()
     return result if result else "error"
+
+
+# return_button
 ...
 
 # return the form tuple -> ((app_of_password.get(), password_entry.get(), user_name_entry.get()))
@@ -219,27 +220,30 @@ def add_password():
 
 # --------------------------------------- serch ---------------------------------------
 
-def search():
-    
+def search(window:Tk):
+
+    global passwords
     passwords = get_passwords()
-    if passwords == []:
-        missing("No Passwords")
+
+    if not passwords:
+        show_error("No Passwords")
         
     else:
-        win = Tk()
+        win = Toplevel(window)
         win.title("serche for a password")
         win.geometry('400x200')
         win.iconbitmap(icons["search"])
         win.resizable(False, False)
 
-        def squert(title:str, button:Button):
+        def search_query(title:str, button:Button):
 
 
             def show_results():
                 introdiction.destroy()
                 serch_app.destroy()
                 serch_name.destroy()
-                serched.destroy()
+                search_entry.destroy()
+                
                 cadre = LabelFrame(
                         win,
                         text=f" {title} ", 
@@ -262,86 +266,92 @@ def search():
                         highlightthickness = 0,
                         width = 50, height = 9
                     )
+                
                 result.pack()
                 scrollbar.config(command = result.yview)
                 result.insert(END, continu)
                 result.config(state="disabled")
                 Button(win, text = "OK", command = win.destroy, font = font(10), bg = "green").pack(side = "bottom")
-            if serched.get():
+
+            if search_entry.get():
                 continu = ""
 
                 if button is serch_name:
                     
                     for index in passwords:
-                        if index["user_name"] == serched.get():
+                        if index["user_name"].lower() == search_entry.get().lower():
                             continu += f"{index["password"]}\n"
                     
-                    if continu == "": missing("invalid user name")
+                    if continu == "": show_error("invalid user name")
 
                     else: show_results()
                     
 
                 else:
                         for index in passwords:
-                            if index["application"] == serched.get():
+                            if index["application"].lower() == search_entry.get().lower():
                                 continu += f"\n{index["password"]}\n"
 
-                        if not continu : missing("No any application use the serched password")
+                        if not continu : show_error("No any application use the serched password")
 
                         else: show_results()
                             
             
             else:
-                missing("No element to serch")
+                show_error("No element to serch")
 
 
             # if not serched.get() in passwords[]
 
 
         def serch_with_user_name():
-            squert("passwords found by user name", serch_name)
+            search_query("passwords found by user name", serch_name)
         
 
         
         def sersh_with_app_name():
-            squert("passwords found by app", serch_app)    
+            search_query("passwords found by app", serch_app)    
 
 
         introdiction = Label(win, text="serch with user name or app name", font=font(10))
         introdiction.pack()
 
-        serched = Entry(win, width=61, font=font(10))
-        serched.pack()
+        search_entry = Entry(win, width=61, font=font(10))
+        search_entry.pack()
         
         serch_name = Button(win, text="serch with user name", font=font(10), command=serch_with_user_name, bg="yellow")
         serch_name.place(x=5, y=170)
         serch_app = Button(win, text="sersh with app name", font=font(10), command=sersh_with_app_name, bg="yellow")
         serch_app.place(x=250, y=170)
-        win.mainloop()
+        
         
 
+# serched
 
-
-def remouve():
+def remouve(window:Tk):
+    global passwords
     passwords = get_passwords()
     if passwords == []:
-        missing("No Passwords")
+        show_error("No Passwords")
 
     elif len(passwords) == 1:
             passwords.pop(0)
+            update_passwords(passwords)
             messagebox.showinfo(title="Remouve Password", message='One password is remouved')
 
     else:
         def finish():
             if not combo.get():
-                missing("No Password Sellcted")
+                show_error("No Password Sellcted")
             
             else:
                 for i, dct in enumerate(passwords, 0):
-                    if dct['password'] == combo.get():
+                    if f"{dct["application"]} - {dct['user_name']}" == combo.get():
                         passwords.pop(i)
+                        break
+
                 update_passwords(passwords)
-                missing("Password remouved successfully")
+                show_error("Password remouved successfully")
                 win.after(1000, win.destroy())
 
 
@@ -350,13 +360,13 @@ def remouve():
                 update_passwords([])
                 win.after(1000, win.destroy())
 
-        win = Tk()
+        win = Toplevel(window)
         win.title("Remouve Password")
         win.geometry('400x200')
-        win.iconbitmap(icons["remouve"])
+        win.iconbitmap(icons["remove"])
         win.resizable(False, False)
 
-        combo = ttk.Combobox(win, value=(tuple(app["password"] for app in passwords)), state="readonly", font=font(10))
+        combo = ttk.Combobox(win, value=(tuple(f"{app["application"]} - {app["user_name"]}" for app in passwords)), state="readonly", font=font(10), height=10)
         combo.pack()
 
         Button(win, text="  Remove Password  ", font=font(10), command=finish).place(x=20, y=160)
@@ -364,6 +374,6 @@ def remouve():
         Button(win, text="Cancel", font=font(10), command=win.destroy).place(x=170, y=160)
 
 
-        win.mainloop()
+        
 
 # remouve()
